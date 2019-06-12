@@ -1,0 +1,23 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Packages used in common bioinformatic pipelines
+
+
+
+## Rtracklayer
+```{r}
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+# BiocManager::install("rtracklayer")
+
+library(rtracklayer)
+hg19_annot <- import("geneAnnot_hg19_canonical.bed", format="bed")
+head(hg19_annot)
+length(hg19_annot)
+```
+
