@@ -1,0 +1,250 @@
+---
+title: "Genomic Packages Tutorial"
+author: "Miguel A. García-Campos"
+output:
+  BiocStyle::html_document:
+    code_folding: show
+    toc: TRUE
+    toc_float: TRUE
+---
+
+```{r, Global Options, echo = F}
+knitr::opts_chunk$set(warning = F, message = F)
+```
+
+# Motivation
+
+
+These set of packages comprises many different parts of the process of genomic 
+analysis. As these packages are all built with R, we can avoid the use of secondary
+packages and programming environments. And as most of them are maintained through
+the Bioconductor project, these packages are expected to work robustly and
+updated in a coordinated manner.
+
+# Setup
+
+```{r, Setup}
+# Cores to be used when parallel is used
+nCores <- 10
+```
+
+## Packages
+
+The packages we are going to introduce
+```{r, packages and functions}
+library(GenomicRanges)
+library(GenomicAlignments)
+library(Gviz)
+library(magrittr)
+library(BSgenome.Hsapiens.UCSC.hg19)
+```
+
+## Functions
+
+A group of custom functions
+```{r, cache=T}
+# source("https://drive.google.com/uc?export=download&id=1IpatZ2_AK7Bwor6BzSpYyi6UeCfiA5xx")
+```
+
+# GenomicRanges
+
+## Basic construction and usage
+
+GenomicRanges are built over a package called IRanges. Implements an algebra of 
+range operations, including efficient algorithms for finding overlaps and 
+nearest neighbors. It is based on a base-1 (i.e. Genomes start at position 1)
+
+The basic construction of a GRanges consist in the following code:
+```{r}
+set.seed(30)
+nReads <- 100
+readSize <- 30
+rStarts <- runif(n = nReads, min = 1, max = 200) %>% as.integer()
+reads <- GRanges(seqnames = "chr1", 
+                 ranges = IRanges(start = rStarts, end = rStarts + readSize),
+                 strand = "+")
+reads
+```
+
+## Essential functions to use with GRanges
+
+`start()`: Extracts the start(s) of the Granges
+
+`end()`: Extracts the end(s) of the Granges 
+
+`strand()`: Extracts the strand of the Granges object
+
+```{r, basic functions, cache = T}
+start(reads) %>% head
+end(reads) %>% head
+strand(reads) %>% head
+```
+
+## findOverlaps()
+
+`findOverlaps()` is perhaps the most important function of this package. In its 
+most generic way, it allows to find which ranges overlap to other ranges. But its speed
+and richness of information can accelerate many tasks for example counting the number of
+reads that overlap an exon.
+
+The output of the `findOverlaps()` function can be queried with the `@` operators
+to extract the pairs of matches.
+
+```{r, overlaps, cache=T}
+(overlaps <- findOverlaps(query = reads[25], subject =  reads))
+overlaps@from %>% head
+overlaps@to %>% head
+```
+
+## coverage()
+
+Another very useful function is the `coverage()` function. With these function
+calculating the coverage of millions of reads is a task that takes a couple of seconds.
+
+```{r, coverage}
+coverage(reads)[["chr1"]] %>% as.numeric() %>% 
+    barplot(main= "Coverage example", ylab = "Counts", xlab = "Position along chromosome")
+
+```
+
+Most elements inside a GRanges object get encoded into an RLE (Run Length Encoding) object.
+For most of the manipulation of data RLE work as normal character or numeric vectors,
+but in certain cases they have to be reverted to their "more conventional" version.
+
+This can be done for example with the as.numeric() and as.character() functions.
+
+```{r}
+coverage(reads)[["chr1"]] %>% class
+coverage(reads)[["chr1"]] 
+coverage(reads)[["chr1"]] %>% as.numeric()
+```
+
+## Additional data in GRanges objects
+
+Additional data can be added and retrieved using the "$" operator and the 
+mcols() function
+```{r}
+reads$readName <- paste0("read_", 1:nReads)
+reads$passQC <- sample(x = c(T, F), prob = c(0.8, 0.2), size = nReads, replace = T)
+mcols(reads)
+```
+
+## Importing BED files as range objects
+
+For importing gene Annotations as BED or GFF files the rtracklayer package does 
+this task very straighforwardly.
+
+```{r}
+geneAnnot <- rtracklayer::import("/home/labs/schwartzlab/miguelg/BIGDATA/UCSC/hg19/geneAnnot_hg19_canonical.bed", format="bed")
+geneAnnot
+```
+
+# Genomic Alignments
+
+## Basic usage with paired-end libraries
+
+Genomic alignments has been built as an interface to read alignment files into
+R in an easy way.
+
+We are going to load already aligned data using the `readGAlignmentPairs()` function
+in the case of paired-end reads. (for single-end aligned reads we use the function
+`readGAlignments()` function)
+
+```{r, basic usage,  cache = T}
+BAMfile <- "~/BIGDATA/GEO/GSE55572/bam/human_Exp2siControl_input_Aligned.out.sorted.bam"
+genome <- BSgenome.Hsapiens.UCSC.hg19
+
+flag0 <- scanBamFlag(isDuplicate = FALSE, # Base parameter
+                     isNotPassingQualityControls=FALSE, 
+                     isPaired = T) #Remove optical duplicates and low quality reads
+iChr <- "chr13"
+param0 <- ScanBamParam(flag=flag0, 
+                       which = GRanges(seqnames= iChr, 
+                                       ranges=IRanges(start=1, end= length(genome[[iChr]])),
+                                       strand = "*"))
+rds <- readGAlignmentPairs(BAMfile, use.names = TRUE, param = param0)
+rds
+```
+
+## CIGAR and sequence information
+
+To retrieve the CIGAR and sequence information, this has to be specified in the
+scanning parameters using the `ScanBamParam()` function.
+
+Additionally read information is stored separately in first and last reads. This
+objects are accesible using the `@` operator.
+
+```{r, basic usage II,  cache = T}
+param1 <- ScanBamParam(flag=flag0, 
+                       which = GRanges(seqnames= iChr, 
+                                       ranges=IRanges(start=1, end= length(genome[[iChr]])),
+                                       strand = "*"),
+                       what = c("seq", "cigar"))
+rds <- readGAlignmentPairs(BAMfile, use.names = TRUE, param = param1)
+rds@first
+```
+
+For all chromosomes
+```{r, basic usage III,  cache = T}
+chroms <- seqnames(geneAnnot) %>% unique %>% as.character()
+t0 <- Sys.time()
+allReads <- lapply(chroms, function(iChr){
+  param0 <- ScanBamParam(flag=flag0, 
+                       which = GRanges(seqnames= iChr, 
+                                       ranges=IRanges(start=1, end= length(genome[[iChr]])),
+                                       strand = "*"))
+  rds <- readGAlignmentPairs(BAMfile, use.names = TRUE, param = param0)
+}) %>% do.call(what = c)
+t1 <- Sys.time()
+t1 - t0
+length(allReads)
+tmp <- seqnames(allReads) %>% table
+tmp2 <- as.numeric(tmp); names(tmp2) <- names(tmp)
+tmp2 <- sort(tmp2)
+ggBarplot(tmp2) + theme_minimal() + ggtitle("Reads by chromosome") + 
+  ylab("Reads") + xlab("Chromosomes") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+# GViz
+
+GViz is a package for visualization of genomic Data. Similar to IGV, but with 
+more options and plotting capabilities.
+
+## Demonstration
+
+Using already analyzed locations we can visualize sections of a BAM file with
+relative easyness. In this case we are plotting locations of putative SNPs 
+detected in the human cell strain used in this study.
+
+```{r, visualizing SNPs, cache = T}
+load("allSNPs_ranges.Rdata")
+
+axisTrack <- GenomeAxisTrack(exponent=0)
+sTrack <- SequenceTrack(genome)
+sTrack_neg <- SequenceTrack(genome, complement = T)
+INPUTs_alTrack <- AlignmentsTrack("/home/labs/schwartzlab/miguelg/BIGDATA/GEO/GSE55572/bam/aggInput.bam", isPaired = T)
+vidWindow <- 20
+
+set.seed(seed = 745)
+for(iSNP in sample(1:length(allSNPs_ranges), 5)){
+  ideoTrack <- IdeogramTrack(genome = "hg19", chromosome = as.character(seqnames(allSNPs_ranges[iSNP])))
+  plotTracks(list(ideoTrack, 
+                  axisTrack,
+                  INPUTs_alTrack,
+                  sTrack,
+                  sTrack_neg),
+             chromosome = as.character(seqnames(allSNPs_ranges[iSNP])),
+             from = start(allSNPs_ranges[iSNP]) - vidWindow,
+             to = end(allSNPs_ranges[iSNP]) + vidWindow, min.height = 0,
+             shape = "box", add53=TRUE, add35=TRUE, main = names(allSNPs_ranges[iSNP]))
+}
+
+```
+
+# Session info
+
+```{r, SessionInfo}
+# Session Info
+sessionInfo()
+```
