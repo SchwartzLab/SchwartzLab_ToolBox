@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
-# Title: 
+# Title: Making Chain Files with kentTools
 # Author: Miguel Angel Garcia-Campos https://github.com/AngelCampos ############
+# Reference: https://iamphioxus.org/2013/06/25/using-liftover-to-convert-genome-assembly-coordinates/
 library("optparse")
 
 # Parsing Arguments ############################################################
@@ -13,6 +14,8 @@ option_list = list(
                 help="Output filename", metavar="character"),
     make_option(c("-m", "--minIdentity"), type="integer", default = 95,
                 help="minIdentity argument for BLAT step [default= %default]", metavar="integer"),
+    make_option(c("-m", "--nCores"), type="integer", default = 2,
+                help="number of cores used for BLAT step [default= %default]", metavar="integer"),
     make_option(c("-d", "--outputDir"), type="character", default = "currentDirectory",
                 help="Output directory", metavar="character"),
     make_option(c("-v", "--verbose"), type = "logical", default = T,
@@ -25,6 +28,7 @@ originGenome <- opt$originGenome
 targetGenome <- opt$targetGenome
 fileName <- opt$fileName
 minIdentity <- opt$minIdentity
+nCores <- opt$nCores
 outputDir <- opt$outputDir
 verbose <- opt$verbose
 
@@ -32,14 +36,6 @@ verbose <- opt$verbose
 if(is.null(fileName)){
     stop("Output Filename Required!")
 }
-
-# Testing
-#originGenome <- "/home/labs/schwartzlab/miguelg/BIGDATA/genome_references/mouse_strains/CAST_EiJ/completeGenome/CAST_EiJ_genome.fa"
-#targetGenome <- "/home/labs/schwartzlab/miguelg/BIGDATA/genome_references/mm9/mm9_genome.fa"
-#fileName <- "CAST_mm9"
-#minIdentity <- 95
-#outputDir <- "currentDirectory"
-#verbose <- T
 
 #Functions #####################################################################
 # source("http://bit.ly/rnaMods")
@@ -50,9 +46,6 @@ listFilePatt <- function(pattern, path = "."){
 
 # Packages #####################################################################
 library(parallel)
-#CRAN packages
-# CRAN_packs <- c("magrittr")
-# dummy <- sapply(CRAN_packs, function(x) installLoad_CRAN(x))
 
 # MAIN program #################################################################
 ORdir <- getwd()
@@ -94,7 +87,7 @@ for (i in chroms){
 write(x = "Aligning using BLAT...", file = file.path(outputDir, paste0("makeChainReport_", fileName, ".txt")), append = T)
 dir.create("psl")
 
-cl <- makeCluster(detectCores() - 1, type = "FORK")
+cl <- makeCluster(nCores, type = "FORK")
 parSapply(cl, chroms, function(i) {
   write(x = paste("Aligning", i),
           file = file.path(outputDir, paste0("makeChainReport_", fileName, ".txt")), append = T)
@@ -104,16 +97,6 @@ parSapply(cl, chroms, function(i) {
                   i, ".psl"))
   })
 stopCluster(cl)
-
-# for(i in chroms){
-#     write(x = paste("Aligning", i),
-#           file = file.path(outputDir, paste0("makeChainReport_", fileName, ".txt")), append = T)
-#     system(paste0("/apps/RH7U2/general/kentUtils/v377/bin/blat ", originGenome,
-#                   " ./split/", i, 
-#                   ".split.fa -t=dna -q=dna -tileSize=12 -fastMap -minIdentity=95 -noHead -minScore=100 ./psl/",
-#                   i, ".psl"))
-#     
-# }
 
 # Change coordinates of .psl files to parent coordinate system
 dir.create("liftup")
