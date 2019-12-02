@@ -7,7 +7,7 @@ to another build.
 Example of usage: Creating a chain file to convert genomeA coordinates
 to genomeB coordinates.
 
-`Rscript makeChainFile.R -o genomeA.fa - t genomeB.fa -n genomeA_to_genomeB`
+`Rscript makeChainFile.R -o genomeA.fa -t genomeB.fa -n genomeA_to_genomeB`
 
 Help is shown using the argument `--help`
 
