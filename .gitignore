@@ -33,6 +33,4 @@ vignettes/*.pdf
 *.knit.md
 
 # Additional
-*.html
-*.png
-*.jpg
+
