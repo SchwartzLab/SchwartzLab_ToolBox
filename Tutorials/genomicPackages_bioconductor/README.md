@@ -441,7 +441,7 @@ t1 - t0
 ```
 
 ```
-## Time difference of 3.275543 mins
+## Time difference of 3.290806 mins
 ```
 
 ```r
@@ -461,7 +461,7 @@ ggBarplot(tmp2) + theme_minimal() + ggtitle("Reads by chromosome") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-![](README_files/figure-html/basic usage III-1.png)<!-- -->
+![](README_files/figure-html/basic_usage_III-1.png)<!-- -->
 
 # GViz
 
@@ -499,7 +499,7 @@ for(iSNP in sample(1:length(allSNPs_ranges), 5)){
 }
 ```
 
-![](README_files/figure-html/visualizing SNPs-1.png)<!-- -->![](README_files/figure-html/visualizing SNPs-2.png)<!-- -->![](README_files/figure-html/visualizing SNPs-3.png)<!-- -->![](README_files/figure-html/visualizing SNPs-4.png)<!-- -->![](README_files/figure-html/visualizing SNPs-5.png)<!-- -->
+![](README_files/figure-html/visualizing_SNPs-1.png)<!-- -->![](README_files/figure-html/visualizing_SNPs-2.png)<!-- -->![](README_files/figure-html/visualizing_SNPs-3.png)<!-- -->![](README_files/figure-html/visualizing_SNPs-4.png)<!-- -->![](README_files/figure-html/visualizing_SNPs-5.png)<!-- -->
 
 # Session info
 

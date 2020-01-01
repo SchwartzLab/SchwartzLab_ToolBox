@@ -10,7 +10,7 @@ output:
     code_folding: show
 ---
 
-```{r, Global Options, echo = F}
+```{r, Global_Options, echo = F}
 knitr::opts_chunk$set(warning = F, message = F)
 ```
 
@@ -32,7 +32,7 @@ nCores <- 10
 ## Packages
 
 The packages we are going to introduce
-```{r, packages and functions}
+```{r, packages}
 library(GenomicRanges)
 library(GenomicAlignments)
 library(Gviz)
@@ -44,7 +44,7 @@ library(ggplot2)
 ## Functions
 
 A group of custom functions
-```{r, cache=T}
+```{r, functions, cache=T}
 ggBarplot <- function(x, ci = NA, title = NULL, subt = NULL, xLab = "Names", yLab = "Values"){
     if(is.null(names(x))){names(x) <- 1:length(x)}
     df <- data.frame(names = factor(names(x), levels = names(x)), value = x, CI = ci)
@@ -68,7 +68,7 @@ nearest neighbors. It is based on a base-1 (i.e. Genomes start at position 1)
 
 The basic construction of a GRanges consist in the following code:
 
-```{r, GRanges construction}
+```{r, GRanges_construction}
 set.seed(30)
 nReads <- 100
 readSize <- 30
@@ -87,7 +87,7 @@ reads
 
 `strand()`: Extracts the strand of the Granges object
 
-```{r, basic functions, cache = T}
+```{r, basic_functions, cache = T}
 start(reads) %>% head
 end(reads) %>% head
 strand(reads) %>% head
@@ -126,7 +126,7 @@ but in certain cases they have to be reverted to their "more conventional" versi
 
 This can be done for example with the as.numeric() and as.character() functions.
 
-```{r, showing RLE}
+```{r, showing_RLE}
 coverage(reads)[["chr1"]] %>% class
 coverage(reads)[["chr1"]] 
 coverage(reads)[["chr1"]] %>% as.numeric()
@@ -136,7 +136,7 @@ coverage(reads)[["chr1"]] %>% as.numeric()
 
 Additional data can be added and retrieved using the "$" operator and the 
 mcols() function
-```{r, additional data table}
+```{r, additional_data_table}
 reads$readName <- paste0("read_", 1:nReads)
 reads$passQC <- sample(x = c(T, F), prob = c(0.8, 0.2), size = nReads, replace = T)
 mcols(reads)
@@ -147,7 +147,7 @@ mcols(reads)
 For importing gene Annotations as BED or GFF files the rtracklayer package does 
 this task very straighforwardly.
 
-```{r, importing bed}
+```{r, importing_bed}
 geneAnnot <- rtracklayer::import("/home/labs/schwartzlab/miguelg/BIGDATA/UCSC/hg19/geneAnnot_hg19_canonical.bed", format="bed")
 geneAnnot
 ```
@@ -163,7 +163,7 @@ We are going to load already aligned data using the `readGAlignmentPairs()` func
 in the case of paired-end reads. (for single-end aligned reads we use the function
 `readGAlignments()` function)
 
-```{r, basic usage,  cache = T}
+```{r, basic_usage,  cache = T}
 BAMfile <- "/home/labs/schwartzlab/miguelg/BIGDATA/GEO/GSE55572/bam/human_Exp2siControl_input_Aligned.out.sorted.bam"
 genome <- BSgenome.Hsapiens.UCSC.hg19
 
@@ -187,7 +187,7 @@ scanning parameters using the `ScanBamParam()` function.
 Additionally read information is stored separately in first and last reads. This
 objects are accesible using the `@` operator.
 
-```{r, basic usage II,  cache = T}
+```{r, basic_usage_II,  cache = T}
 param1 <- ScanBamParam(flag=flag0, 
                        which = GRanges(seqnames= iChr, 
                                        ranges=IRanges(start=1, end= length(genome[[iChr]])),
@@ -198,7 +198,7 @@ rds@first
 ```
 
 For all chromosomes
-```{r, basic usage III,  cache = T}
+```{r, basic_usage_III,  cache = T}
 chroms <- seqnames(geneAnnot) %>% unique %>% as.character()
 t0 <- Sys.time()
 allReads <- lapply(chroms, function(iChr){
@@ -230,7 +230,7 @@ Using already analyzed locations we can visualize sections of a BAM file with
 relative easyness. In this case we are plotting locations of putative SNPs 
 detected in the human cell strain used in this study.
 
-```{r, visualizing SNPs, cache = T}
+```{r, visualizing_SNPs, cache = T}
 load("/home/labs/schwartzlab/miguelg/WORKSPACE_wexac/m6A/allelicImbalance/allSNPs_ranges.Rdata")
 
 axisTrack <- GenomeAxisTrack(exponent=0)
