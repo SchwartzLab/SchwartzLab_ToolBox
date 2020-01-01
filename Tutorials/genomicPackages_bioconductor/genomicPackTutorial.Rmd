@@ -151,7 +151,7 @@ in the case of paired-end reads. (for single-end aligned reads we use the functi
 `readGAlignments()` function)
 
 ```{r, basic usage,  cache = T}
-BAMfile <- "~/BIGDATA/GEO/GSE55572/bam/human_Exp2siControl_input_Aligned.out.sorted.bam"
+BAMfile <- "/home/labs/schwartzlab/miguelg/BIGDATA/GEO/GSE55572/bam/human_Exp2siControl_input_Aligned.out.sorted.bam"
 genome <- BSgenome.Hsapiens.UCSC.hg19
 
 flag0 <- scanBamFlag(isDuplicate = FALSE, # Base parameter
