@@ -1,6 +1,16 @@
 # SchwartzLab_ToolBox
 
-A set of programs, and scripts that make our life easier.
+A set of programs, scripts, and tutorials that make our life easier.
+
+## Tutorials
+
+A collection of notebooks meant to instruct how to use the main features of
+packages useful for genomic research.
+
+### Bioconductor Genomic Packages
+
+An introduction and example of usage to GenomicRanges, GenomicAlignments, and
+Gviz.
 
 ## ggPlotShortcuts.R
 
