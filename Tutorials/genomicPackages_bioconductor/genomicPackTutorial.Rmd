@@ -2,10 +2,12 @@
 title: "Genomic Packages Tutorial"
 author: "Miguel A. García-Campos"
 output:
-  BiocStyle::html_document:
-    code_folding: show
-    toc: TRUE
+  html_document: 
+    keep_md: yes
+    theme: cerulean
+    toc: yes
     toc_float: TRUE
+    code_folding: show
 ---
 
 ```{r, Global Options, echo = F}
@@ -13,7 +15,6 @@ knitr::opts_chunk$set(warning = F, message = F)
 ```
 
 # Motivation
-
 
 These set of packages comprises many different parts of the process of genomic 
 analysis. As these packages are all built with R, we can avoid the use of secondary
@@ -37,13 +38,24 @@ library(GenomicAlignments)
 library(Gviz)
 library(magrittr)
 library(BSgenome.Hsapiens.UCSC.hg19)
+library(ggplot2)
 ```
 
 ## Functions
 
 A group of custom functions
 ```{r, cache=T}
-# source("https://drive.google.com/uc?export=download&id=1IpatZ2_AK7Bwor6BzSpYyi6UeCfiA5xx")
+ggBarplot <- function(x, ci = NA, title = NULL, subt = NULL, xLab = "Names", yLab = "Values"){
+    if(is.null(names(x))){names(x) <- 1:length(x)}
+    df <- data.frame(names = factor(names(x), levels = names(x)), value = x, CI = ci)
+    outGG <- ggplot(data=df, aes(x=names, y=value)) + 
+        geom_bar(stat="identity") + theme_classic() + 
+        geom_errorbar(aes(ymin=value-CI, ymax=value+CI), width=.2, position=position_dodge(.9)) + 
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle(title, subt) +
+        ylab(yLab) + xlab(xLab)
+    return(outGG)
+}
+
 ```
 
 # GenomicRanges
@@ -55,7 +67,8 @@ range operations, including efficient algorithms for finding overlaps and
 nearest neighbors. It is based on a base-1 (i.e. Genomes start at position 1)
 
 The basic construction of a GRanges consist in the following code:
-```{r}
+
+```{r, GRanges construction}
 set.seed(30)
 nReads <- 100
 readSize <- 30
@@ -113,7 +126,7 @@ but in certain cases they have to be reverted to their "more conventional" versi
 
 This can be done for example with the as.numeric() and as.character() functions.
 
-```{r}
+```{r, showing RLE}
 coverage(reads)[["chr1"]] %>% class
 coverage(reads)[["chr1"]] 
 coverage(reads)[["chr1"]] %>% as.numeric()
@@ -123,7 +136,7 @@ coverage(reads)[["chr1"]] %>% as.numeric()
 
 Additional data can be added and retrieved using the "$" operator and the 
 mcols() function
-```{r}
+```{r, additional data table}
 reads$readName <- paste0("read_", 1:nReads)
 reads$passQC <- sample(x = c(T, F), prob = c(0.8, 0.2), size = nReads, replace = T)
 mcols(reads)
@@ -134,7 +147,7 @@ mcols(reads)
 For importing gene Annotations as BED or GFF files the rtracklayer package does 
 this task very straighforwardly.
 
-```{r}
+```{r, importing bed}
 geneAnnot <- rtracklayer::import("/home/labs/schwartzlab/miguelg/BIGDATA/UCSC/hg19/geneAnnot_hg19_canonical.bed", format="bed")
 geneAnnot
 ```
@@ -218,7 +231,7 @@ relative easyness. In this case we are plotting locations of putative SNPs
 detected in the human cell strain used in this study.
 
 ```{r, visualizing SNPs, cache = T}
-load("allSNPs_ranges.Rdata")
+load("/home/labs/schwartzlab/miguelg/WORKSPACE_wexac/m6A/allelicImbalance/allSNPs_ranges.Rdata")
 
 axisTrack <- GenomeAxisTrack(exponent=0)
 sTrack <- SequenceTrack(genome)
