@@ -1,0 +1,16 @@
+For any of these items to work, a user must be connected to the Weizmann network by VPN or ethernet.
+
+Weizmann application server (web browser);
+https://appsrv.wexac.weizmann.ac.il/
+
+To mount network drive;
+//data.wexac.weizmann.ac.il/schwartzlab
+
+When prompted for user/pw;
+wismain\USER
+
+To shh from terminal;
+ssh USER@access.wexac.weizmann.ac.il
+
+
+Here is a ./bash_profile that may be useful (will upload later)...
