@@ -15,4 +15,27 @@ ssh USER@access.wexac.weizmann.ac.il
 #lab server
 ssh USER@epitrans.wexac.weizmann.ac.il
 
+
+Machines available to us and size;
+
+Group's personal;
+epitrans.wexac.weizmann.ac.il // 16 cores // 251G 
+
+RStudio server:
+rstudio.wexac.weizmann.ac.il // 80 cores // 755G
+
+Departmental (rarely utilized);
+molgen.wexac.weizmann.ac.il // 40 cores // 251G 
+molgen1.wexac.weizmann.ac.il // 40 cores // 376G
+molgen2.wexac.weizmann.ac.il // 40 cores // 376G
+molgen3.wexac.weizmann.ac.il // 40 cores // 376G
+
+Institute (for file transfer);
+acesss.wexac.weizmann.ac.il // 56 cores // 188G
+acesss1.wexac.weizmann.ac.il // 52 cores // 754G
+acesss2.wexac.weizmann.ac.il // 52 cores // 754G
+acesss3.wexac.weizmann.ac.il // 80 cores // 755G
+acesss3.wexac.weizmann.ac.il // 80 cores // 187G
+
+
 Here is a ./bash_profile that may be useful (will upload later)...
