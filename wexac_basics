@@ -10,10 +10,7 @@ When prompted for user/pw;
 wismain\USER
 
 To shh from terminal;
-#use for file transfer
-ssh USER@access.wexac.weizmann.ac.il
-#lab server
-ssh USER@epitrans.wexac.weizmann.ac.il
+ssh USER@SERVER.wexac.weizmann.ac.il
 
 
 Machines available to us and size;
