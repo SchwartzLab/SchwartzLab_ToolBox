@@ -34,5 +34,8 @@ acesss2.wexac.weizmann.ac.il // 52 cores // 754G
 acesss3.wexac.weizmann.ac.il // 80 cores // 755G
 acesss3.wexac.weizmann.ac.il // 80 cores // 187G
 
+For docker (requires user to be added);
+cn151.wexac.weizmann.ac.il // 40 cores // 125G
+
 
 Here is a ./bash_profile that may be useful (will upload later)...
