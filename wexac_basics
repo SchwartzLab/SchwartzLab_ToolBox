@@ -20,6 +20,7 @@ epitrans.wexac.weizmann.ac.il // 16 cores // 251G
 
 RStudio server:
 rstudio.wexac.weizmann.ac.il // 80 cores // 755G
+rstudio2.wexac.weizmann.ac.il // 64 cores // 125G #This machine seems largely inactive/unused
 
 Departmental (rarely utilized);
 molgen.wexac.weizmann.ac.il // 40 cores // 251G 
