@@ -12,6 +12,8 @@ wismain\USER
 To shh from terminal;
 ssh USER@SERVER.wexac.weizmann.ac.il
 
+To use pip;
+pip3 install package name --user
 
 Machines available to us and size;
 
