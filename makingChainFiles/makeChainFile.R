@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
-# Title: Making Chain Files with kentTools
+# Title: Make chain file
 # Author: Miguel Angel Garcia-Campos https://github.com/AngelCampos ############
-# Reference: https://iamphioxus.org/2013/06/25/using-liftover-to-convert-genome-assembly-coordinates/
+# Based on Jia-Xing Yue post https://iamphioxus.org/2013/06/25/using-liftover-to-convert-genome-assembly-coordinates/
 library("optparse")
 
 # Parsing Arguments ############################################################
@@ -14,10 +14,10 @@ option_list = list(
                 help="Output filename", metavar="character"),
     make_option(c("-m", "--minIdentity"), type="integer", default = 95,
                 help="minIdentity argument for BLAT step [default= %default]", metavar="integer"),
-    make_option(c("-m", "--nCores"), type="integer", default = 2,
-                help="number of cores used for BLAT step [default= %default]", metavar="integer"),
     make_option(c("-d", "--outputDir"), type="character", default = "currentDirectory",
-                help="Output directory", metavar="character"),
+                help="Output directory  [default= %default]", metavar="character"),
+    make_option(c("-c", "--nCores"), type="integer", default = 1,
+                help="Number of cores to be used [default= %default]", metavar="integer"),
     make_option(c("-v", "--verbose"), type = "logical", default = T,
                 help="Tells you what is going on [default= %default]", metavar="logical")
 )
@@ -28,9 +28,9 @@ originGenome <- opt$originGenome
 targetGenome <- opt$targetGenome
 fileName <- opt$fileName
 minIdentity <- opt$minIdentity
-nCores <- opt$nCores
 outputDir <- opt$outputDir
 verbose <- opt$verbose
+nCores <- opt$nCores
 
 # Requiring output file name
 if(is.null(fileName)){
@@ -60,19 +60,20 @@ if(sum(list.files() %in% targetGenome) == 1){
 if(outputDir == "currentDirectory"){
     outputDir <- ORdir
 }
+
 # Creating txt  file for report
 dummy <- file.create(file.path(outputDir, paste0("makeChainReport_", fileName, ".txt")))
 
 # Move to temporary directory to work in "background"
-# BGdir <- tempdir()
-BGdir <- file.path(outputDir, "tmp")
-dir.create(BGdir)
+BGdir <- gsub("^/", "", tempdir())
+BGdir <- file.path(outputDir, BGdir)
+dir.create(BGdir, recursive = TRUE)
 setwd(BGdir)
 
 # Splitting chromosomes from target genome 
+write(x = "Splitting chromosomes...", file = file.path(outputDir, paste0("makeChainReport_", fileName, ".txt")), append = T)
 system(paste0("/usr/bin/csplit -s -z ", targetGenome, " '/>/' '{*}'"))
 system('for i in xx* ; do   n=$(sed "s/>// ; s/ .*// ; 1q" "$i") ;   mv "$i" "$n.fa" ; done')
-write(x = "Splitting chromosomes...", file = file.path(outputDir, paste0("makeChainReport_", fileName, ".txt")), append = T)
 
 # Split the G2 chromosomes/scaffolds into 3K chunks and make lift files
 dir.create("lift")
@@ -88,12 +89,12 @@ write(x = "Aligning using BLAT...", file = file.path(outputDir, paste0("makeChai
 dir.create("psl")
 
 cl <- makeCluster(nCores, type = "FORK")
-parSapply(cl, chroms, function(i) {
+dummy <- parSapply(cl, chroms, function(i) {
   write(x = paste("Aligning", i),
           file = file.path(outputDir, paste0("makeChainReport_", fileName, ".txt")), append = T)
   system(paste0("/apps/RH7U2/general/kentUtils/v377/bin/blat ", originGenome,
                   " ./split/", i, 
-                  ".split.fa -t=dna -q=dna -tileSize=12 -fastMap -minIdentity=95 -noHead -minScore=100 ./psl/",
+                  ".split.fa -t=dna -q=dna -tileSize=12 -fastMap -minIdentity=", minIdentity, " -noHead -minScore=100 ./psl/",
                   i, ".psl"))
   })
 stopCluster(cl)
@@ -133,12 +134,12 @@ for(i in listFilePatt("chain", "chain_split/")){
 }
 
 # Output File
-if(!grepl(pattern = ".over.chain$", fileName)){
-    outFileName <- paste0(fileName, ".over.chain")
+if(!grepl(pattern = ".chain$", fileName)){
+    outFileName <- paste0(fileName, ".chain")
 }else{outFileName <- fileName}
 
 system(paste0("cat ./over/*.chain > ", file.path(outputDir, outFileName)))
 write(x = "...DONE.", file = file.path(outputDir, paste0("makeChainReport_", fileName, ".txt")), append = T)
 
 # Erasing temporary folder
-# system(paste0("rm ", BGdir, " -r"))
+system(paste0("rm ", BGdir, " -r"))
